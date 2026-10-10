@@ -1,15 +1,25 @@
-# OpenScienceAgentBench
+<div align="center">
 
-[![Daily arXiv digest](https://github.com/nadiw1245/OpenScienceAgentBench/actions/workflows/update-arxiv-digest.yml/badge.svg)](https://github.com/nadiw1245/OpenScienceAgentBench/actions/workflows/update-arxiv-digest.yml)
-[![MIT License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-3776AB.svg?logo=python&logoColor=white)](https://www.python.org/)
-[![Streamlit](https://img.shields.io/badge/Web%20app-Streamlit-FF4B4B.svg?logo=streamlit&logoColor=white)](https://streamlit.io/)
+<h1>OpenScienceAgentBench</h1>
+
+<p><strong>From recent AI papers to a research direction you can pursue</strong></p>
+
+<p>Search arXiv, inspect the source papers, and build a practical research plan around your skills, time, and compute.</p>
+
+<p><a href="#quick-start">Get started</a> · <a href="docs/deployment.md">Run the web app</a> · <a href="docs/research-methodology.md">Read the research methods</a></p>
+
+<p>
+  <a href="https://github.com/nadiw1245/OpenScienceAgentBench/actions/workflows/update-arxiv-digest.yml"><img alt="Daily arXiv digest" src="https://github.com/nadiw1245/OpenScienceAgentBench/actions/workflows/update-arxiv-digest.yml/badge.svg"></a>
+  <a href="LICENSE"><img alt="MIT License" src="https://img.shields.io/badge/License-MIT-blue.svg"></a>
+  <a href="https://www.python.org/"><img alt="Python 3.10+" src="https://img.shields.io/badge/Python-3.10%2B-3776AB.svg?logo=python&logoColor=white"></a>
+  <a href="https://streamlit.io/"><img alt="Web app: Streamlit" src="https://img.shields.io/badge/Web%20app-Streamlit-FF4B4B.svg?logo=streamlit&logoColor=white"></a>
+</p>
 
 ![OpenScienceAgentBench: follow new AI research and find a direction worth pursuing](assets/social-preview.svg)
 
-**Find a research direction worth pursuing.** Search recent arXiv AI papers, inspect the evidence, and ask an AI advisor to turn a topic into practical next steps for your skills and resources.
+</div>
 
-OpenScienceAgentBench combines a live arXiv search, an optional AI research advisor, a daily paper digest, and a command-line workflow. It is designed to help new researchers get oriented—not to replace a literature review, advisor, or reproducibility study.
+OpenScienceAgentBench combines live arXiv discovery, an optional AI research advisor, a daily paper digest, and a command-line workflow. It helps new researchers get oriented and plan a feasible first project. Model suggestions are starting points for human review.
 
 ## What it does
 
@@ -19,6 +29,17 @@ OpenScienceAgentBench combines a live arXiv search, an optional AI research advi
 - **Inspect sources:** review the exact paper records and abstracts supplied to the model, with direct arXiv links.
 - **Track new releases:** publish an automatically refreshed digest in Markdown and JSON.
 - **Choose a model:** use Gemini, Hugging Face Inference Providers, or OpenAI with your own key.
+
+## How it works
+
+```mermaid
+flowchart LR
+    A[Choose a research topic] --> B[Search recent arXiv papers]
+    B --> C[Review the source papers]
+    C --> D[Explore themes and candidate questions]
+    D --> E[Match a path to your time and resources]
+    E --> F[Build a 30/60/90-day plan]
+```
 
 ## Start the web app
 
