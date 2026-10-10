@@ -1,66 +1,116 @@
 # OpenScienceAgentBench
 
-An arXiv research release tracker and evidence pipeline for open scientific AI. It collects recent papers from AI-related arXiv categories, links each record to its source, records GitHub repositories only when the arXiv metadata explicitly lists them, and includes an AI research advisor for evidence-backed trend questions and research roadmaps.
+[![Daily arXiv digest](https://github.com/nadiw1245/OpenScienceAgentBench/actions/workflows/update-arxiv-digest.yml/badge.svg)](https://github.com/nadiw1245/OpenScienceAgentBench/actions/workflows/update-arxiv-digest.yml)
+[![MIT License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-3776AB.svg?logo=python&logoColor=white)](https://www.python.org/)
+[![Streamlit](https://img.shields.io/badge/Web%20app-Streamlit-FF4B4B.svg?logo=streamlit&logoColor=white)](https://streamlit.io/)
 
-> A GitHub link in an arXiv record is evidence that the record points to that repository. It does not prove that the repository reproduces the paper's results. This project keeps those claims separate.
+![OpenScienceAgentBench: follow new AI research and find a direction worth pursuing](assets/social-preview.svg)
+
+**Find a research direction worth pursuing.** Search recent arXiv AI papers, inspect the evidence, and ask an AI advisor to turn a topic into practical next steps for your skills and resources.
+
+OpenScienceAgentBench combines a live arXiv search, an optional AI research advisor, a daily paper digest, and a command-line workflow. It is designed to help new researchers get oriented—not to replace a literature review, advisor, or reproducibility study.
+
+## What it does
+
+- **Find papers:** search a topic phrase or browse a broad recent sample from selected AI-focused arXiv categories.
+- **Explore directions:** ask about themes, methods, limitations stated by authors, and possible follow-up questions.
+- **Plan a project:** get several research paths and a personalized 30/60/90-day plan that accounts for time, skills, compute, data, and mentorship.
+- **Inspect sources:** review the exact paper records and abstracts supplied to the model, with direct arXiv links.
+- **Track new releases:** publish an automatically refreshed digest in Markdown and JSON.
+- **Choose a model:** use Gemini, Hugging Face Inference Providers, or OpenAI with your own key.
+
+## Start the web app
+
+Requirements: Python 3.10 or newer.
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
+streamlit run app.py
+```
+
+In the app, choose a model provider, enter your own provider key, select a supported model, and search. The arXiv search does not need an API key. The AI synthesis does.
+
+To publish a browser-accessible instance from this GitHub repository, follow the [Streamlit deployment guide](docs/deployment.md).
+
+### Model providers and costs
+
+| Provider | Key | Cost and data notes |
+| --- | --- | --- |
+| Gemini | [`GEMINI_API_KEY`](https://aistudio.google.com/app/apikey) | Eligible models may have a limited free tier; quotas and terms can change. Google marks free-tier content as usable to improve its products. |
+| Hugging Face Inference Providers | [`HF_TOKEN`](https://huggingface.co/settings/tokens) and a provider-supported model ID | Hugging Face currently lists **$0.10/month** in credits for Free users, subject to change. Requests beyond available credits may require payment. |
+| OpenAI | [`OPENAI_API_KEY`](https://platform.openai.com/api-keys) | API usage is billed separately from ChatGPT subscriptions. |
+
+Check the providers' [current Gemini terms and pricing](https://ai.google.dev/gemini-api/docs/pricing) and [Hugging Face Inference Providers pricing](https://huggingface.co/docs/inference-providers/pricing) before use. Keys entered into a hosted app are processed by its server; the selected model provider receives your question, profile, and retrieved abstracts. See [deployment and data handling](docs/deployment.md). Never commit API keys.
+
+## Ask from the command line
+
+The CLI uses live arXiv search by default. Set a provider key in your shell, then run:
+
+```powershell
+$env:GEMINI_API_KEY = "your-api-key"
+python scripts/research_advisor.py "What direction should I explore?" `
+  --topic "AI agents" `
+  --background "Beginner Python, undergraduate mathematics" `
+  --constraints "5 hours per week, no GPU" `
+  --goal "Choose a reproducible starter project" `
+  --once
+```
+
+Use another provider by setting its environment variables and selecting it:
+
+```powershell
+$env:HF_TOKEN = "your-hugging-face-token"
+$env:HF_MODEL = "provider/model-name"
+python scripts/research_advisor.py "Suggest a research path" --topic "AI agents" --provider huggingface --once
+```
+
+The included CLI and digest use Python's standard library. To ask about the saved digest instead of querying arXiv live, add `--source digest`. See [advisor usage and evidence limits](docs/research-advisor.md).
 
 ## Latest papers
 
-The rolling digest is generated from the arXiv API:
+- [Browse the latest digest](docs/latest.md)
+- [Download the paper metadata](data/latest.json)
+- [How evidence is recorded](docs/evidence-policy.md)
+- [How the system works](docs/architecture.md)
+- [Research methods and limitations](docs/research-methodology.md)
+- [Deployment instructions](docs/deployment.md)
+- [Project roadmap](docs/roadmap.md)
 
-**[Browse the latest digest](docs/latest.md)** · [Machine-readable JSON](data/latest.json)
-
-## What it records
-
-- New version 1 submissions in `cs.AI`, `cs.LG`, `cs.CL`, `cs.CV`, `cs.RO`, `cs.NE`, and `stat.ML`.
-- Paper title, authors, abstract, arXiv identifier, categories, and publication date.
-- GitHub repositories explicitly linked in the arXiv abstract or author comment, with the metadata field recorded as evidence.
-- A GitHub search link when arXiv metadata contains no repository link. Search results are suggestions and are marked as unverified.
-- Generation time, query, and category list in the JSON output.
-- An interactive advisor that summarizes signals in the digest and proposes a personalized, staged path for a new researcher.
-
-The tracker does not assess paper quality, confirm repository ownership, run experiments, or validate reported results. See [the evidence policy](docs/evidence-policy.md).
-
-## Run locally
-
-Requirements: Python 3.10 or newer. The script uses only the Python standard library.
+The default digest covers first submissions from the preceding three days in `cs.AI`, `cs.LG`, `cs.CL`, `cs.CV`, `cs.RO`, `cs.NE`, and `stat.ML`. Refresh it locally with:
 
 ```powershell
 python scripts/update_digest.py
 ```
 
-By default, the script includes first submissions from the last three days and writes `docs/latest.md` and `data/latest.json`. Customize the time window, categories, or output limit:
+The scheduled workflow runs daily at 08:00 UTC and can also be run from **Actions → Update arXiv digest → Run workflow**. Repository settings must allow Actions to write contents for scheduled commits to work.
 
-```powershell
-python scripts/update_digest.py --days 7 --max-papers 150
-python scripts/update_digest.py --categories cs.AI,cs.LG,stat.ML
+## Important limitations
+
+- A live search returns a limited arXiv metadata sample from the chosen categories and date window. It is not all of arXiv, all scholarly literature, or a systematic review.
+- The advisor reads titles and abstracts, not full papers. Suggested gaps are hypotheses; novelty needs a broader literature search and human review.
+- Theme labels are simple keyword tags. They do not establish that a research area is growing or that a paper is high quality.
+- A GitHub URL in arXiv metadata is a source link, not evidence that code reproduces reported results. The project does not run paper code.
+- Model-generated summaries can be incomplete or wrong. Check the linked papers and provider terms.
+
+See the [research methodology](docs/research-methodology.md) and [evidence policy](docs/evidence-policy.md) for details.
+
+## Repository contents
+
+```text
+app.py                              Streamlit web interface
+scripts/research_advisor.py         Live arXiv search and model-backed CLI
+scripts/update_digest.py            Daily digest generator
+data/latest.json                    Machine-readable latest digest
+docs/latest.md                      Human-readable latest digest
+.github/workflows/                  Scheduled digest update
+docs/                               Setup, methods, evidence, deployment, roadmap
 ```
 
-The script queries arXiv's Atom API with a maximum of 2,000 results per request. If the API or network is unavailable, it exits with an error and does not replace the current digest.
+## Contribute and cite
 
-## Ask the research advisor
+Issues and focused pull requests are welcome. Start with [CONTRIBUTING.md](CONTRIBUTING.md); report vulnerabilities using [SECURITY.md](SECURITY.md). Read [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) for community expectations. Citation metadata is in [CITATION.cff](CITATION.cff); the project is MIT-licensed.
 
-The advisor answers questions such as “What trends appear in AI agents?” and can turn your interests, current skills, and available time or compute into a 30/60/90-day roadmap. It cites arXiv papers from the local digest and treats research gaps as hypotheses to investigate. The default provider is Gemini via Google AI Studio's limited free tier.
-
-```powershell
-$env:GEMINI_API_KEY = "your-api-key"
-python scripts/research_advisor.py
-```
-
-It uses Python's standard library. Hugging Face Inference Providers and the OpenAI Responses API can also be selected with `--provider huggingface` or `--provider openai`. Hugging Face currently includes no inference credits for free accounts, so routed calls require purchased credits or an eligible paid plan. Keys and tokens are read from shell environment variables and never saved in the repository. The advisor uses only the current local digest; it does not browse the web. Review [provider setup, evidence limits, and data handling](docs/research-advisor.md) before using it.
-
-## Automatic updates
-
-The GitHub Actions workflow refreshes the digest daily and can also be run from **Actions → Update arXiv digest → Run workflow**. It commits changed digest files to `main`. The workflow needs the repository's Actions setting to allow the workflow token to write contents; the workflow declares only the `contents: write` permission it needs.
-
-## Data sources and scope
-
-- Paper records: [arXiv API](https://info.arxiv.org/help/api/user-manual.html)
-- Repository links: URLs present in arXiv API metadata only
-- Generated files: [`docs/latest.md`](docs/latest.md) and [`data/latest.json`](data/latest.json)
-
-This release provides the evidence tracker and a digest-grounded research advisor. A reproducible benchmark, scoring protocol, and experiment runner are not implemented yet.
-
-## Contributing
-
-Contributions that improve provenance, search coverage, and reproducibility are welcome. Please keep source links and verification limits explicit. See the [MIT license](LICENSE).
+If you share the project, show one real query and its source papers, and invite feedback on retrieval quality and usefulness. No repository can guarantee stars or research impact.

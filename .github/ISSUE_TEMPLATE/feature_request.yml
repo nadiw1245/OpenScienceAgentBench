@@ -1,0 +1,30 @@
+name: Feature request
+description: Suggest a focused improvement to research discovery or evidence quality.
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem should this solve?
+      description: Describe the research or workflow need.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed change
+      description: Explain how you think the project could address it.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence or examples
+      description: Link example papers, metadata, or workflows when available.
+  - type: textarea
+    id: limitations
+    attributes:
+      label: Risks or limitations
+      description: Note tradeoffs, data needs, or ways this could produce misleading claims.

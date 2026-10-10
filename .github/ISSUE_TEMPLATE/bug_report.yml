@@ -1,0 +1,38 @@
+name: Bug report
+description: Report a reproducible problem in the tracker or research advisor.
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: Share enough detail to reproduce the problem. Do not include API keys, tokens, or private prompts.
+  - type: textarea
+    id: summary
+    attributes:
+      label: What happened?
+      description: Describe the behavior and what you expected instead.
+    validations:
+      required: true
+  - type: input
+    id: arxiv_id
+    attributes:
+      label: arXiv ID, if relevant
+      placeholder: 2601.01234
+  - type: input
+    id: command
+    attributes:
+      label: Command or workflow used
+      placeholder: python scripts/update_digest.py --days 3
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: Include the smallest set of steps that shows the issue.
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: Python version, operating system, and provider/model if relevant.

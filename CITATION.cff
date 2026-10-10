@@ -1,0 +1,12 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it using this metadata."
+authors:
+  - name: "nadiw1245"
+title: "OpenScienceAgentBench"
+type: software
+url: "https://github.com/nadiw1245/OpenScienceAgentBench"
+license: MIT
+abstract: >-
+  An open arXiv paper discovery tool with a web interface and evidence-aware
+  AI advisor that helps early-career researchers explore research directions
+  and plan feasible projects.

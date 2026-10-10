@@ -1,65 +1,67 @@
-# Research trends and roadmap advisor
+# Live research discovery and advisor
 
-The advisor answers questions about the local arXiv digest and helps a new researcher compare practical directions. It can personalize a 30/60/90-day roadmap using interests, skills, goals, and constraints such as limited compute or data access.
+The advisor searches the arXiv Atom API for recent metadata, then sends a small selected set of titles and abstracts to the model provider you choose. It can summarize signals in the returned sample, suggest research hypotheses, and tailor a 30/60/90-day plan to a researcher's background and constraints.
 
-## Setup
+## Web app
 
-The default provider is Gemini through Google AI Studio. Create an API key in [Google AI Studio](https://aistudio.google.com/app/apikey), then set it in your shell. Gemini's OpenAI-compatible chat endpoint lets the advisor use Python's standard library; no package installation is required. The default model is `gemini-3.8-flash` and can be changed with `GEMINI_MODEL` or `--model`.
+Run `streamlit run app.py`, enter a topic or select the broad-sample option, choose categories and a time window, and provide your researcher profile. Select Gemini, Hugging Face Inference Providers, or OpenAI and enter your own API key and a model supported by that provider. See [deployment](deployment.md) for setup and key handling.
 
-PowerShell:
+## CLI setup
+
+The live arXiv search and CLI use Python's standard library. Set one key in your shell and start the advisor:
 
 ```powershell
 $env:GEMINI_API_KEY = "your-api-key"
-# Optional: pick another model available to your API key.
-$env:GEMINI_MODEL = "your-model-id"
-```
-
-Start the interactive advisor:
-
-```powershell
-python scripts/research_advisor.py
-```
-
-Gemini currently offers limited free-tier usage for eligible models, subject to quotas and changes. On Google's free tier, prompts and responses may be used to improve its products; do not submit confidential or unpublished research. Review the [current Gemini API pricing and free-tier terms](https://ai.google.dev/gemini-api/docs/pricing) before use.
-
-### Other providers
-
-Hugging Face Inference Providers are also supported. Create a fine-grained token with the **Make calls to Inference Providers** permission in [Hugging Face token settings](https://huggingface.co/settings/tokens). Free Hugging Face accounts currently have no included Inference Providers credits; routed requests require purchased credits or an eligible paid plan. Choose a model served by an Inference Provider and set both values:
-
-```powershell
-$env:HF_TOKEN = "your-hugging-face-token"
-$env:HF_MODEL = "provider/model-id"
-python scripts/research_advisor.py --provider huggingface
-```
-
-The OpenAI Responses API remains available as another option:
-
-```powershell
-$env:OPENAI_API_KEY = "your-api-key"
-python scripts/research_advisor.py --provider openai
-```
-
-To choose a different model, use the provider-specific variable (`GEMINI_MODEL`, `HF_MODEL`, or `OPENAI_MODEL`) or pass `--model`. API tokens and keys are read from environment variables and must not be committed to the repository.
-
-## Asking questions
-
-The advisor asks what you want to know, then optionally asks about your interests, background, available time/compute/data/mentorship, and goal. In an interactive session you can ask follow-up questions; type `quit` to end.
-
-You can also provide a direct question and profile on the command line:
-
-```powershell
-python scripts/research_advisor.py "What trends appear in AI agents?" `
-  --background "Beginner in Python, undergraduate mathematics" `
+python scripts/research_advisor.py "What research directions are worth exploring?" `
+  --topic "AI agents" `
+  --background "Beginner Python, undergraduate mathematics" `
   --constraints "5 hours per week, no GPU" `
-  --goal "Choose a small reproducible project"
+  --goal "Choose a small reproducible project" `
+  --once
 ```
 
-Use `--once` to return one answer without follow-up chat, `--interests` to target a topic, or `--digest path/to/latest.json` to choose a different snapshot. Set `RESEARCH_ADVISOR_PROVIDER` to `gemini`, `huggingface`, or `openai` to change the default provider.
+The live search defaults to a 24-month window, up to 80 records, and selected AI-related categories. These values can be changed:
 
-## Evidence and data handling
+```powershell
+python scripts/research_advisor.py "Find research directions" `
+  --topic "retrieval-augmented generation" `
+  --months 12 `
+  --max-results 60 `
+  --categories cs.AI,cs.CL,cs.LG `
+  --once
+```
 
-The advisor reads `data/latest.json`, selects up to 30 relevant papers, and sends their titles, clipped abstracts, categories, arXiv IDs, and your prompt/profile to the selected model provider. The OpenAI Responses API request sets `store: false`; Gemini and Hugging Face use their chat-completions APIs and follow those providers' own data terms. Check the terms for your chosen provider before sending private information.
+To ask about the checked-in digest instead, use `--source digest`. The digest is a rolling three-day feed by default, so it is usually less useful for historical topic exploration.
 
-The theme counts are keyword-based hints from a single snapshot, not statistical proof of a field-wide trend or growth over time. The advisor is instructed to cite only arXiv IDs in the selected digest, label possible gaps as hypotheses, and recommend checking full papers before committing to a direction. The CLI warns when an answer cites an arXiv ID or GitHub repository outside the selected records. It does not browse the web or verify whether a code repository reproduces a paper.
+### Provider environment variables
 
-The current GitHub Actions workflow only refreshes the paper digest; it does not call the advisor or require an API secret.
+| Provider | Key | Optional model override | Selection |
+| --- | --- | --- | --- |
+| Gemini | [`GEMINI_API_KEY`](https://aistudio.google.com/app/apikey) | `GEMINI_MODEL` | `--provider gemini` (default) |
+| Hugging Face | [Create a fine-grained `HF_TOKEN`](https://huggingface.co/settings/tokens) | `HF_MODEL` | `--provider huggingface` |
+| OpenAI | [`OPENAI_API_KEY`](https://platform.openai.com/api-keys) | `OPENAI_MODEL` | `--provider openai` |
+
+For Hugging Face, use a fine-grained token that allows Inference Providers calls and a model ID currently served by a supported provider. Hugging Face currently lists **$0.10/month** in credits for Free users; the amount and availability can change, and additional usage may require payment. Consult [Hugging Face pricing](https://huggingface.co/docs/inference-providers/pricing). Gemini's eligible free-tier models have limited quotas; Google states free-tier content may be used to improve products. See [Gemini pricing and terms](https://ai.google.dev/gemini-api/docs/pricing). OpenAI API usage is billed separately from ChatGPT plans.
+
+Never commit an API key. A hosted app processes the key on its server and sends your request to the selected model provider. Review [data handling and deployment guidance](deployment.md) before using a hosted instance.
+
+## Evidence workflow
+
+1. Search one topic phrase in the selected categories over a stated date window, or request a broad recent AI sample.
+2. Review the returned arXiv records and identify papers relevant to the question.
+3. Ask the model to cite only those records and make its reasoning useful for a new researcher.
+4. Check the cited papers and independently investigate any suggested gap before deciding on a project.
+
+The app displays the evidence records used and checks whether cited arXiv IDs or GitHub repositories are outside that evidence set. This is a warning mechanism, not a guarantee that every citation is correct.
+
+## Data handling
+
+The model receives your question, researcher profile, retrieved paper titles, clipped abstracts, dates, categories, and arXiv links. The OpenAI Responses API call requests `store: false`. Other providers have their own terms. Avoid sending confidential, personal, or unpublished research details unless you have reviewed the provider's terms and are comfortable with that use.
+
+## Limitations
+
+- The search covers arXiv metadata only, not full text or scholarly indexes outside arXiv.
+- Returned records are limited by query relevance or recency and the selected result cap. They are not a representative sample of the full field.
+- Keyword theme counts show tags in the returned set. They do not establish a field-wide trend or change over time.
+- Abstracts may omit related work, limitations, and future work. The model cannot certify that an idea is novel.
+- A linked code repository is not proof of reproducibility, paper authorship, or ownership.
